@@ -1,0 +1,8 @@
+﻿  My_Scheduler.c
+c:\users\hyoung\source\repos\scehduler\scehduler\my_scheduler.c(58): warning C4047: 'return': 'char'의 간접 참조 수준이 'void *'과(와) 다릅니다.
+c:\users\hyoung\source\repos\scehduler\scehduler\my_scheduler.c(64): warning C4047: 'return': 'char'의 간접 참조 수준이 'char *'과(와) 다릅니다.
+c:\users\hyoung\source\repos\scehduler\scehduler\my_scheduler.c(75): warning C4101: 'c' :참조되지 않은 지역 변수입니다.
+  My_Scheduler_Test.c
+  코드를 생성하고 있습니다...
+c:\users\hyoung\source\repos\scehduler\scehduler\my_scheduler.c(64): warning C4172: 지역 변수 또는 임시: Del_data의 주소를 반환하고 있습니다.
+  Scehduler.vcxproj -> C:\Users\Hyoung\source\repos\Scehduler\Debug\Scehduler.exe
