@@ -1,5 +1,2 @@
 ﻿  My_Scheduler.c
-c:\users\hyoung\source\repos\scehduler\scehduler\my_scheduler.c(76): warning C4101: 'x' :참조되지 않은 지역 변수입니다.
-  My_Scheduler_Test.c
-  코드를 생성하고 있습니다...
   Scehduler.vcxproj -> C:\Users\Hyoung\source\repos\Scehduler\Debug\Scehduler.exe

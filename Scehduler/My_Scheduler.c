@@ -73,7 +73,6 @@ void Clean_frame(sched *S) {
 void FCFS(sched *s) {
 	Clean_frame(s);		// clean my frame for FCFS
 	printf("\n\t\t FCFS \n\n");
-	int x;
 	Queue q;
 	InitQueue(&q);
 	int i, j;
@@ -136,8 +135,36 @@ void SPN(sched *s) {
 }
 
 void RR(sched *s) {
-	printf("\t\t RR \n\n");
+	Clean_frame(s);		// clean my frame for RR
+	printf("\n\t\t RR \n\n");
+	Queue ready_q, exc_q;
+	InitQueue(&ready_q);
+	InitQueue(&exc_q);
+	int i, j;
+
+	int* use_t = (int*)malloc(sizeof(int*)*s->n);
+	for (i = 0; i < s->n; i++) use_t[i] = s->Task_time[i][1];
+	// use_t for task run time
+
+	for (i = 0; i < s->total_time; i++)	{
+		for (j = 0; j < s->n; j++) 
+			if (s->Task_time[j][0] == i)	
+				push(&ready_q, s->Task_name[j]);	
+		if (exc_q.count == 1) {
+			int X = pop(&exc_q);
+			push(&ready_q, X);
+		}
+		push(&exc_q , pop(&ready_q) ); 
+
+		s->Sched_frame[exc_q.front->data][i] = 1;	// run
+		use_t[exc_q.front->data]--;
+		if (use_t[exc_q.front->data] == 0) pop(&exc_q);	// if process is end, pop this process
+	}
+	Print(s);
 }
+
+
+
 void HRRN(sched *s) {
 
 	printf("\t\t HRRN \n\n");
