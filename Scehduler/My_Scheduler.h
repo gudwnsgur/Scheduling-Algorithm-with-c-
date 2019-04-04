@@ -25,10 +25,10 @@ int IsEmpty(Queue *q); // check Queue is empty
 void push(Queue *q, int data); // put data in queue
 int pop(Queue *q); // delete last node in queue
 
-void FCFS(sched *S);
-void SPN(sched *S);
+void FIFO(sched *S);
+void SJF(sched *S);
+void SRT(sched *S);
 void RR(sched *S);
-void HRRN(sched *S);
 void FeedBack(sched *S, int t);
 void RM(sched *S);
 void Lottery(sched *S);

@@ -70,8 +70,8 @@ void Clean_frame(sched *S) {
 			S->Sched_frame[i][j] = 0;	// initialize scheduler frame
 }
 
-void FCFS(sched *s)	{
-	Clean_frame(s);		// clean my frame for FCFS
+void FIFO(sched *s)	{
+	Clean_frame(s);		// clean my frame for FIFO(First In First Out)
 	printf("\n\t\t FCFS \n\n");
 	Queue q;
 	InitQueue(&q);
@@ -94,9 +94,9 @@ void FCFS(sched *s)	{
 	Print(s);
 }
 
-void SPN(sched *s) {
+void SJF(sched *s) {
 	
-	Clean_frame(s);		// clean my frame for SPN
+	Clean_frame(s);		// clean my frame for SJF (Shortest Job First)
 	printf("\n\t\t SPN \n\n");
 	int i, j;
 	int cur_task;	// task that have to run now
@@ -134,38 +134,9 @@ void SPN(sched *s) {
 	Print(s);
 }
 
-void RR(sched *s) {
-	Clean_frame(s);		// clean my frame for RR
-	printf("\n\t\t RR \n\n");
-	Queue ready_q, exc_q;
-	InitQueue(&ready_q);
-	InitQueue(&exc_q);
-	int i, j;
-
-	int* use_t = (int*)malloc(sizeof(int*)*s->n);
-	for (i = 0; i < s->n; i++) use_t[i] = s->Task_time[i][1];
-	// use_t for task run time
-
-	for (i = 0; i < s->total_time; i++)	{
-		for (j = 0; j < s->n; j++) 
-			if (s->Task_time[j][0] == i)	
-				push(&ready_q, s->Task_name[j]);	
-		if (exc_q.count == 1) {
-			int X = pop(&exc_q);
-			push(&ready_q, X);
-		}
-		push(&exc_q , pop(&ready_q) ); 
-
-		s->Sched_frame[exc_q.front->data][i] = 1;	// run
-		use_t[exc_q.front->data]--;
-		if (use_t[exc_q.front->data] == 0) pop(&exc_q);	// if process is end, pop this process
-	}
-	Print(s);
-}
-
-void HRRN(sched *s) {
-	Clean_frame(s);		// clean my frame for RR
-	printf("\t\t\n HRRN \n\n");
+void SRT(sched *s) {
+	Clean_frame(s);		// clean my frame for SRT(Shortest Remaining-Time Next)
+	printf("\n\t\t HRRN \n\n");
 	int i, j, cur_task;
 
 	int* use_t = (int*)malloc(sizeof(int*)*s->n);
@@ -205,15 +176,46 @@ void HRRN(sched *s) {
 	}
 	Print(s);
 }
+
+void RR(sched *s) {
+	Clean_frame(s);		// clean my frame for RR (Round-robin)
+	printf("\n\t\t RR \n\n");
+	Queue ready_q, exc_q;
+	InitQueue(&ready_q);
+	InitQueue(&exc_q);
+	int i, j;
+
+	int* use_t = (int*)malloc(sizeof(int*)*s->n);
+	for (i = 0; i < s->n; i++) use_t[i] = s->Task_time[i][1];
+	// use_t for task run time
+
+	for (i = 0; i < s->total_time; i++) {
+		for (j = 0; j < s->n; j++)
+			if (s->Task_time[j][0] == i)
+				push(&ready_q, s->Task_name[j]);
+		if (exc_q.count == 1) {
+			int X = pop(&exc_q);
+			push(&ready_q, X);
+		}
+		push(&exc_q, pop(&ready_q));
+
+		s->Sched_frame[exc_q.front->data][i] = 1;	// run
+		use_t[exc_q.front->data]--;
+		if (use_t[exc_q.front->data] == 0) pop(&exc_q);	// if process is end, pop this process
+	}
+	Print(s);
+}
+
+
 void FeedBack(sched *s, int t) {
-	printf("\t\t FeedBack of time %d \n\n", t);
+	printf("\n\t\t FeedBack of time %d \n\n", t);
 
 }
 void RM(sched *s) {
-	printf("\t\t RM \n\n");
+	printf("\n\t\t RM \n\n");
 }
 void Lottery(sched *s) {
-	printf("\t\t Lottery \n\n");
+	printf("\n\t\t Lottery \n\n");
 
 	printf("end\n");
 }
