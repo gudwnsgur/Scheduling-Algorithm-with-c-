@@ -72,7 +72,7 @@ void Clean_frame(sched *S) {
 
 void FIFO(sched *s)	{
 	Clean_frame(s);		// clean my frame for FIFO(First In First Out)
-	printf("\n\t\t FCFS \n\n");
+	printf("\n\t\t FIFO \n\n");
 	Queue q;
 	InitQueue(&q);
 	int i, j;
@@ -97,7 +97,7 @@ void FIFO(sched *s)	{
 void SJF(sched *s) {
 	
 	Clean_frame(s);		// clean my frame for SJF (Shortest Job First)
-	printf("\n\t\t SPN \n\n");
+	printf("\n\t\t SJF \n\n");
 	int i, j;
 	int cur_task;	// task that have to run now
 	int* use_t = (int*)malloc(sizeof(int*)*s->n);
@@ -136,7 +136,7 @@ void SJF(sched *s) {
 
 void SRT(sched *s) {
 	Clean_frame(s);		// clean my frame for SRT(Shortest Remaining-Time Next)
-	printf("\n\t\t HRRN \n\n");
+	printf("\n\t\t SRT \n\n");
 	int i, j, cur_task;
 
 	int* use_t = (int*)malloc(sizeof(int*)*s->n);
