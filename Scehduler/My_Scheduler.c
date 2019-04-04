@@ -70,7 +70,7 @@ void Clean_frame(sched *S) {
 			S->Sched_frame[i][j] = 0;	// initialize scheduler frame
 }
 
-void FCFS(sched *s) {
+void FCFS(sched *s)	{
 	Clean_frame(s);		// clean my frame for FCFS
 	printf("\n\t\t FCFS \n\n");
 	Queue q;
@@ -163,14 +163,51 @@ void RR(sched *s) {
 	Print(s);
 }
 
-
-
 void HRRN(sched *s) {
+	Clean_frame(s);		// clean my frame for RR
+	printf("\t\t\n HRRN \n\n");
+	int i, j, cur_task;
 
-	printf("\t\t HRRN \n\n");
+	int* use_t = (int*)malloc(sizeof(int*)*s->n);
+	int* Q = (int*)malloc(sizeof(int*)*s->n + 1);
+	for (i = 0; i < s->n; i++) {
+		use_t[i] = s->Task_time[i][1];			// use_t : task run time
+		Q[i] = 0;		// check what process is in Q 
+	} Q[s->n] = 0;
+	
+	for (i = 0; i < s->total_time; i++)
+	{
+		for (j = 0; j < s->n; j++) {
+			if (s->Task_time[j][0] == i) {	// if process j is entered
+				Q[j]++; Q[s->n]++;	// check Q[j] 
+				if (Q[s->n] == 1) cur_task = j;	// only one process is in Q
+				else {							// if process in Q are more than two
+					int min = 9999;			
+					for (int k = (s->n) - 1; k >= 0; k--) {		
+						if (Q[k] == 1 && min >= use_t[k]) {	
+							min = use_t[k];
+							cur_task = k;		// shortest run-time of process will be cur_task 
+		}	}	}	}	}
+
+		s->Sched_frame[cur_task][i] = 1;	// run
+		use_t[cur_task]--;
+
+		if (use_t[cur_task] == 0) {		// if current task is end
+			Q[cur_task] = -1;	Q[s->n]--;	// delete this task at Q
+			if (Q[s->n] == 0) break;
+			int tmp = 9999;
+			for (j = 0; j < s->n; j++) {
+				if (Q[j] == 1 && tmp > use_t[j]) {
+					tmp = use_t[j];	 cur_task = j;
+				}
+			}	// find next task to run
+		}
+	}
+	Print(s);
 }
 void FeedBack(sched *s, int t) {
 	printf("\t\t FeedBack of time %d \n\n", t);
+
 }
 void RM(sched *s) {
 	printf("\t\t RM \n\n");
