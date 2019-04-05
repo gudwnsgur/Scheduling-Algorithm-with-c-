@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 void init_sched(sched *S) {	// initialize Process for scheduling
 	int i;
@@ -28,7 +29,16 @@ void init_sched(sched *S) {	// initialize Process for scheduling
 	for (i = 0; i < S->n; i++)
 		S->Sched_frame[i] = (int*)malloc(sizeof(int)*S->total_time);	// allocation Sched_frame
 
-	printf("\n");
+	S->use_t = (int*)malloc(sizeof(int*)*S->n);
+	S->Q = (int*)malloc(sizeof(int*)*S->n + 1);
+	for (i = 0; i < S->n; i++) {
+		S->use_t[i] = S->Task_time[i][1];			// use_t : task run time
+		S->Q[i] = 0;		// check what process is in Q 
+	} S->Q[S->n] = 0;	/* Q[i] == 0 : process i is not entered yet
+					   Q[i] == 1 : process i is in Q
+					   Q[i] == -1 : process i is end
+					   Q[n] : count process in Q
+					*/
 }
 
 void InitQueue(Queue *q) {	// initialize Queue
@@ -64,14 +74,23 @@ int pop(Queue *q) { // delete last node in queue
 	return Del_data;	// return deleted process name 
 }
 
-void Clean_frame(sched *S) {
-	for (int i = 0; i < S->n; i++)
-		for (int j = 0; j < S->total_time; j++)
+void Clean_frame(sched *S)	// clean frame, use_t, Q for each Scheduler
+{
+	int i, j;
+	for (i = 0; i < S->n; i++)
+		for (j = 0; j < S->total_time; j++)
 			S->Sched_frame[i][j] = 0;	// initialize scheduler frame
+
+	for (i = 0; i < S->n; i++) {
+		S->use_t[i] = S->Task_time[i][1];			// use_t : task run time
+		S->Q[i] = 0;		// check what process is in Q 
+	} S->Q[S->n] = 0;	/*	  Q[i] == 0 : process i is not in Q
+							  Q[i] == 1 : process i is in Q
+							  Q[n] : count process in Q			*/
 }
 
 void FIFO(sched *s)	{
-	Clean_frame(s);		// clean my frame for FIFO(First In First Out)
+	Clean_frame(s);		// clean my frame, use_t, Q for FIFO(First In First Out)
 	printf("\n\t\t FIFO \n\n");
 	Queue q;
 	InitQueue(&q);
@@ -94,39 +113,30 @@ void FIFO(sched *s)	{
 	Print(s);
 }
 
-void SJF(sched *s) {
-	
-	Clean_frame(s);		// clean my frame for SJF (Shortest Job First)
+void SJF(sched *s)
+{	
+	Clean_frame(s);		// clean my frame, use_t, Q for SJF (Shortest Job First)
 	printf("\n\t\t SJF \n\n");
 	int i, j;
 	int cur_task;	// task that have to run now
-	int* use_t = (int*)malloc(sizeof(int*)*s->n);
-	int* Q = (int*)malloc(sizeof(int*)*s->n + 1);
-	for (i = 0; i < s->n; i++) {
-		use_t[i] = s->Task_time[i][1];			// use_t : task run time
-		Q[i] = 0;		// check what process is in Q 
-	} Q[s->n] = 0;	/* Q[i] == 0 : process i is not entered yet 
-					   Q[i] == 1 : process i is in Q 					
-					   Q[i] == -1 : process i is end 
-					   Q[n] : count process in Q
-					*/
+
 	for (i = 0; i < s->total_time; i++)	{
 		for (j = 0; j < s->n; j++) {
 			if (s->Task_time[j][0] == i) {
-				Q[j]++; Q[s->n]++;
-				if (Q[s->n] == 1) cur_task = s->Task_name[j];
+				s->Q[j]++; s->Q[s->n]++;
+				if (s->Q[s->n] == 1) cur_task = s->Task_name[j];
 			}	// if process entered, push process X in Q[X]
 		}
 		s->Sched_frame[cur_task][i] = 1;	// run
-		use_t[cur_task]--;
+		s->use_t[cur_task]--;
 
-		if (use_t[cur_task] == 0) {		// if current task is end
-			Q[cur_task] = -1;	Q[s->n]--;	// delete this task at Q
-			if (Q[s->n] == 0) break;
+		if (s->use_t[cur_task] == 0) {		// if current task is end
+			s->Q[cur_task]--;	s->Q[s->n]--;	// delete this task at Q
+			if (s->Q[s->n] == 0) break;
 			int tmp = 9999;
 			for (j = 0; j < s->n; j++) {
-				if (Q[j] == 1 && tmp > use_t[j]) {
-					tmp = use_t[j];	 cur_task = j;
+				if (s->Q[j] == 1 && tmp > s->use_t[j]) {
+					tmp = s->use_t[j];	 cur_task = j;
 				}
 			}	// find next task to run
 		}
@@ -135,41 +145,34 @@ void SJF(sched *s) {
 }
 
 void SRT(sched *s) {
-	Clean_frame(s);		// clean my frame for SRT(Shortest Remaining-Time Next)
+	Clean_frame(s);		// clean my frame, use_t, Q for SRT(Shortest Remaining-Time Next)
 	printf("\n\t\t SRT \n\n");
 	int i, j, cur_task;
 
-	int* use_t = (int*)malloc(sizeof(int*)*s->n);
-	int* Q = (int*)malloc(sizeof(int*)*s->n + 1);
-	for (i = 0; i < s->n; i++) {
-		use_t[i] = s->Task_time[i][1];			// use_t : task run time
-		Q[i] = 0;		// check what process is in Q 
-	} Q[s->n] = 0;
-	
 	for (i = 0; i < s->total_time; i++)
 	{
 		for (j = 0; j < s->n; j++) {
 			if (s->Task_time[j][0] == i) {	// if process j is entered
-				Q[j]++; Q[s->n]++;	// check Q[j] 
-				if (Q[s->n] == 1) cur_task = j;	// only one process is in Q
+				s->Q[j]++; s->Q[s->n]++;	// check Q[j] 
+				if (s->Q[s->n] == 1) cur_task = j;	// only one process is in Q
 				else {							// if process in Q are more than two
 					int min = 9999;			
 					for (int k = (s->n) - 1; k >= 0; k--) {		
-						if (Q[k] == 1 && min >= use_t[k]) {	
-							min = use_t[k];
+						if (s->Q[k] == 1 && min >= s->use_t[k]) {
+							min = s->use_t[k];
 							cur_task = k;		// shortest run-time of process will be cur_task 
 		}	}	}	}	}
 
 		s->Sched_frame[cur_task][i] = 1;	// run
-		use_t[cur_task]--;
+		s->use_t[cur_task]--;
 
-		if (use_t[cur_task] == 0) {		// if current task is end
-			Q[cur_task] = -1;	Q[s->n]--;	// delete this task at Q
-			if (Q[s->n] == 0) break;
+		if (s->use_t[cur_task] == 0) {		// if current task is end
+			s->Q[cur_task]--;	s->Q[s->n]--;	// delete this task at Q
+			if (s->Q[s->n] == 0) break;
 			int tmp = 9999;
 			for (j = 0; j < s->n; j++) {
-				if (Q[j] == 1 && tmp > use_t[j]) {
-					tmp = use_t[j];	 cur_task = j;
+				if (s->Q[j] == 1 && tmp > s->use_t[j]) {
+					tmp = s->use_t[j];	 cur_task = j;
 				}
 			}	// find next task to run
 		}
@@ -206,20 +209,84 @@ void RR(sched *s) {
 	Print(s);
 }
 
-
 void FeedBack(sched *s, int t) {
+	Clean_frame(s);		
 	printf("\n\t\t FeedBack of time %d \n\n", t);
+	
 
+	Print(s);
 }
+
+void Lottery(sched *s) {
+	Clean_frame(s);		// clean ym frame, use_t, Q for Lottery
+	printf("\n\t\t Lottery \n\n");
+	int i, j, k, cur_task;
+	srand(time(NULL));		// random number for each time
+
+	int* ran_arr = (int*)malloc(sizeof(int)*s->total_time);	
+	printf("     ");
+	for (i = 0; i < s->total_time; i++) {
+		ran_arr[i] = rand() % 100;	// initialize random array to 0~99
+		printf("%d  ",ran_arr[i] );
+	}
+	printf("\n");
+	double* Ticket = (double*)malloc(sizeof(double)*s->n);
+	for (k = 0; k < s->n; k++)	Ticket[k] = 0;		// Ticket[] for allocate ticket
+
+	for (i = 0; i < s->total_time; i++)	{
+		double total_T=0;		// total current run-time for Ticketing
+		for (j = 0; j < s->n; j++) {
+			if (s->Task_time[j][0] == i) {	// if process j is entered
+				s->Q[j]++; s->Q[s->n]++;
+				for (k = 0; k < s->n; k++)	Ticket[k] = 0;
+
+				for (k = 0; k < s->n; k++) 
+					total_T += (double)( s->use_t[k] * s->Q[k] );	
+					// total_T is total run-time of current process
+				
+				double x = 0;
+				for (k = 0; k < s->n; k++) {
+					if(s->Q[k] != 0 ){
+						Ticket[k] =  x + (double)( (s->use_t[k] * s->Q[k] * 100) / total_T );
+						x = Ticket[k];		// Ticketing accumulatively
+					}
+				}
+			}
+		}
+		for (j = 0; j < s->n; j++) {
+			if (ran_arr[i] < Ticket[j] || Ticket[j] == 100) {
+				cur_task = j;
+				break;
+			}		// choose task which want to run now
+		}
+		s->Sched_frame[cur_task][i] = 1;	// run
+		s->use_t[cur_task]--;
+
+		if (s->use_t[cur_task] == 0) {		//
+			s->Q[cur_task]--;	s->Q[s->n]--;	// delete this task at Q
+			if (s->Q[s->n] == 0) break;
+		
+			total_T = 0;
+			for (k = 0; k < s->n; k++)	Ticket[k] = 0;
+			for (k = 0; k < s->n; k++)
+				total_T += (double)(s->use_t[k] * s->Q[k]);
+
+			int x = 0;
+			for (k = 0; k < s->n; k++) {
+				if (s->Q[k] != 0) {
+					Ticket[k] = x + (double)((s->use_t[k] * s->Q[k] * 100) / total_T);
+					x += Ticket[k];
+				}
+			}
+		}	// if current task is end, Reticketing to choose next task without current task
+
+	}
+	Print(s);
+}
+
 void RM(sched *s) {
 	printf("\n\t\t RM \n\n");
 }
-void Lottery(sched *s) {
-	printf("\n\t\t Lottery \n\n");
-
-	printf("end\n");
-}
-
 void Print(sched *s) {
 	int i, j;
 	for (i = 0; i < s->n; i++) {

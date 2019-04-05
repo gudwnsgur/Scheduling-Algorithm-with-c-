@@ -5,7 +5,9 @@ typedef struct sched {
 	int* Task_name;	// name of process
 	int** Task_time;	// enter-time and run-time of process
 	int** Sched_frame;	// frame of scheduler
-}sched;		// include my variables for scheduling
+	int* use_t; // each process's run-time for using
+	int* Q;		
+} sched;		// include my variables for scheduling
 
 typedef struct ChainNode {
 	int data;
@@ -16,7 +18,7 @@ typedef struct Queue {
 	ChainNode* front;
 	ChainNode* rear;
 	int count;	
-}Queue;			// struct for using queue
+} Queue;			// struct for using queue
 
 void init_sched(sched *S);	// initialize sched
 
