@@ -31,8 +31,7 @@ void FIFO(sched *S);
 void SJF(sched *S);
 void SRT(sched *S);
 void RR(sched *S);
-void FeedBack(sched *S, int t);
-void RM(sched *S);
+void FeedBack(sched *S, int q);
 void Lottery(sched *S);
 
 void Clean_frame(sched *S);

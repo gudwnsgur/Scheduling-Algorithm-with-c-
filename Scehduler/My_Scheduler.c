@@ -188,10 +188,6 @@ void RR(sched *s) {
 	InitQueue(&exc_q);
 	int i, j;
 
-	int* use_t = (int*)malloc(sizeof(int*)*s->n);
-	for (i = 0; i < s->n; i++) use_t[i] = s->Task_time[i][1];
-	// use_t for task run time
-
 	for (i = 0; i < s->total_time; i++) {
 		for (j = 0; j < s->n; j++)
 			if (s->Task_time[j][0] == i)
@@ -203,19 +199,12 @@ void RR(sched *s) {
 		push(&exc_q, pop(&ready_q));
 
 		s->Sched_frame[exc_q.front->data][i] = 1;	// run
-		use_t[exc_q.front->data]--;
-		if (use_t[exc_q.front->data] == 0) pop(&exc_q);	// if process is end, pop this process
+		s->use_t[exc_q.front->data]--;
+		if (s->use_t[exc_q.front->data] == 0) pop(&exc_q);	// if process is end, pop this process
 	}
 	Print(s);
 }
 
-void FeedBack(sched *s, int t) {
-	Clean_frame(s);		
-	printf("\n\t\t FeedBack of time %d \n\n", t);
-	
-
-	Print(s);
-}
 
 void Lottery(sched *s) {
 	Clean_frame(s);		// clean ym frame, use_t, Q for Lottery
@@ -284,9 +273,66 @@ void Lottery(sched *s) {
 	Print(s);
 }
 
-void RM(sched *s) {
-	printf("\n\t\t RM \n\n");
+void FeedBack(sched *s, int q) {
+	Clean_frame(s);		// clean frame for MLFQ (Multi-Level Feedback Queue)
+	printf("\n\t\t FeedBack of time %d (q1 : 1, q2 : %d, q3 : %d) \n\n",q, q/2 , q);
+	Queue My_q[3];
+	int x[2] = { -1,0 };	// x[0] = waiting process , x[1] = priority of this process
+	InitQueue(&My_q[0]);	InitQueue(&My_q[1]); InitQueue(&My_q[2]);
+	int i, j;
+
+	int* use_Q = (int*)malloc(sizeof(int*)*s->n);
+	for (i = 0; i < s->n; i++) use_Q[i] = q/2;		
+
+	for (i = 0; i < s->total_time; i++)
+	{
+		for (j = 0; j < s->n; j++)
+			if (s->Task_time[j][0] == i) { push(&My_q[0], j); }	// if process j is entered
+
+		if (x[0] != -1)	push(&My_q[x[1]], x[0]);	// waiting process is exist
+
+		if (My_q[0].count != 0) {	// if priority 1 queue have process
+			s->Sched_frame[My_q[0].front->data][i] = 1;	// run
+			s->use_t[My_q[0].front->data]--;
+
+			if (s->use_t[My_q[0].front->data] == 0) { x[0] = -1;  pop(&My_q[0]); }
+			else 	x[0] = pop(&My_q[0]);	// check process is end
+
+			if (My_q[0].count == 0 && My_q[1].count == 0 && My_q[2].count == 0)	x[1] = 0;
+			else x[1] = 1;		// check process is exist in all queue
+		}
+		else if (My_q[1].count != 0) {	// if priority 2 queue have process
+			s->Sched_frame[My_q[1].front->data][i] = 1;	// run
+			s->use_t[My_q[1].front->data]--;
+			use_Q[My_q[1].front->data]--;
+
+			if (s->use_t[My_q[1].front->data] == 0) { x[0] = -1;  pop(&My_q[1]); }	// if current task is end
+			else {	// if crrent task is not end
+				if (use_Q[My_q[1].front->data] == 0) {	// current task already use q/2 in My_q[1] 
+					x[0] = pop(&My_q[1]);
+					x[1] = 2;
+					use_Q[x[0]] = q;
+				}
+				else x[0] = -1;	// current task has not use q/2 yet
+			}
+
+		}
+		else if (My_q[2].count != 0) {	// if priority 2 queue have process
+			s->Sched_frame[My_q[2].front->data][i] = 1;	// run
+			s->use_t[My_q[2].front->data]--;
+			use_Q[My_q[2].front->data]--;
+
+			if (s->use_t[My_q[2].front->data] == 0) { x[0] = -1;  pop(&My_q[2]); }	// if current task is end
+			else {
+				if (use_Q[My_q[2].front->data] == 0) 	// current task already use q in My_q[2] 
+					push(&My_q[2], pop(&My_q[2]));
+			}
+		}
+
+	}
+	Print(s);
 }
+
 void Print(sched *s) {
 	int i, j;
 	for (i = 0; i < s->n; i++) {

@@ -11,11 +11,10 @@ int main(int argc, char *argv[]) {
 	SJF(&My_S);
 	SRT(&My_S);
 	RR(&My_S);
-
-	FeedBack(&My_S, 1);
-	FeedBack(&My_S, 4);
-	RM(&My_S);
 	Lottery(&My_S);
-
+	FeedBack(&My_S, 2);
+	FeedBack(&My_S, 4);
+	FeedBack(&My_S, 8);
+	
 	return 0;
 }
