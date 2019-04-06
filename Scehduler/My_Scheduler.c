@@ -180,27 +180,37 @@ void SRT(sched *s) {
 	Print(s);
 }
 
-void RR(sched *s) {
+void RR(sched *s, int t)
+{	
 	Clean_frame(s);		// clean my frame for RR (Round-robin)
-	printf("\n\t\t RR \n\n");
+	printf("\n\t\t RR (Time Quantum : %d) \n\n", t);
 	Queue ready_q, exc_q;
 	InitQueue(&ready_q);
 	InitQueue(&exc_q);
 	int i, j;
+	int* use_Q = (int*)malloc(sizeof(int*)*s->n);
+	for (i = 0; i < s->n; i++) use_Q[i] = t;	// initialize use_Q 
 
-	for (i = 0; i < s->total_time; i++) {
+	for (i = 0; i < s->total_time; i++)
+	{
 		for (j = 0; j < s->n; j++)
 			if (s->Task_time[j][0] == i)
-				push(&ready_q, s->Task_name[j]);
-		if (exc_q.count == 1) {
-			int X = pop(&exc_q);
-			push(&ready_q, X);
-		}
-		push(&exc_q, pop(&ready_q));
+				push(&exc_q, s->Task_name[j]);	// if process in entered, push in exc_q
 
+		if (ready_q.count == 1) 
+			push(&exc_q, pop(&ready_q));	// if waiting process is exist, push in exc_q 
+		
 		s->Sched_frame[exc_q.front->data][i] = 1;	// run
 		s->use_t[exc_q.front->data]--;
+		use_Q[exc_q.front->data]--;
+
 		if (s->use_t[exc_q.front->data] == 0) pop(&exc_q);	// if process is end, pop this process
+		else {
+			if (use_Q[exc_q.front->data] == 0) {	// if time quantum is end
+				push(&ready_q, pop(&exc_q));		// pop this process and push to ready_q
+				use_Q[ready_q.front->data] = t;		// reallocate time quantum
+			}
+		}
 	}
 	Print(s);
 }

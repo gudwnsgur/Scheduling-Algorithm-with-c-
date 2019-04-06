@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
 	FIFO(&My_S);
 	SJF(&My_S);
 	SRT(&My_S);
-	RR(&My_S);
+	RR(&My_S, 2);
 	Lottery(&My_S);
 	FeedBack(&My_S, 2);
 	FeedBack(&My_S, 4);

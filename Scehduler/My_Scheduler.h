@@ -30,7 +30,7 @@ int pop(Queue *q); // delete last node in queue
 void FIFO(sched *S);
 void SJF(sched *S);
 void SRT(sched *S);
-void RR(sched *S);
+void RR(sched *S, int t);
 void FeedBack(sched *S, int q);
 void Lottery(sched *S);
 
